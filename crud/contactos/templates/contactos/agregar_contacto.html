@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agregar Contacto</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body class="bg-gray-100 text-gray-800">
+    <nav class="bg-blue-600 p-4 text-white">
+      <a href="{% url 'lista_contactos' %}" class="font-bold">Contactos</a>
+    </nav>
+    <div class="container mx-auto p-4">
+      <div class="max-w-lg mx-auto bg-white rounded shadow p-6">
+        <h1 class="text-2xl font-bold mb-4">Agregar Contacto</h1>
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <div>
+            <label for="id_nombre" class="block font-medium mb-1">Nombre</label>
+            <input type="text" name="nombre" id="id_nombre" class="border rounded px-3 py-2 w-full" placeholder="Escribe el nombre aquí" value="{{ form.nombre.value|default_if_none:'' }}">
+            {% if form.nombre.errors %}
+              <div class="text-red-600 text-sm">{{ form.nombre.errors }}</div>
+            {% endif %}
+          </div>
+          <div>
+            <label for="id_telefono" class="block font-medium mb-1">Teléfono</label>
+            <input type="text" name="telefono" id="id_telefono" class="border rounded px-3 py-2 w-full" placeholder="Escribe el teléfono aquí" value="{{ form.telefono.value|default_if_none:'' }}">
+            {% if form.telefono.errors %}
+              <div class="text-red-600 text-sm">{{ form.telefono.errors }}</div>
+            {% endif %}
+          </div>
+          <div>
+            <label for="id_correo" class="block font-medium mb-1">Correo</label>
+            <input type="email" name="correo" id="id_correo" class="border rounded px-3 py-2 w-full" placeholder="ejemplo@correo.com" value="{{ form.correo.value|default_if_none:'' }}">
+            {% if form.correo.errors %}
+              <div class="text-red-600 text-sm">{{ form.correo.errors }}</div>
+            {% endif %}
+          </div>
+          <div>
+            <label for="id_direccion" class="block font-medium mb-1">Dirección</label>
+            <input type="text" name="direccion" id="id_direccion" class="border rounded px-3 py-2 w-full" placeholder="Escribe la dirección aquí" value="{{ form.direccion.value|default_if_none:'' }}">
+            {% if form.direccion.errors %}
+              <div class="text-red-600 text-sm">{{ form.direccion.errors }}</div>
+            {% endif %}
+          </div>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar</button>
+        </form>
+        <a href="{% url 'lista_contactos' %}" class="inline-block mt-4 text-blue-600 hover:underline">Ver lista de contactos</a>
+      </div>
+    </div>
+  </body>
+</html>
