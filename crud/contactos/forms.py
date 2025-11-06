@@ -1,7 +1,29 @@
 from django import forms
+import re
+from .models import Contactos
 
-class AgregarContactoForm(forms.Form):
-    nombre = forms.CharField(max_length=100, label="Nombre")
-    telefono = forms.CharField(max_length=20, label="Teléfono")
-    correo = forms.EmailField(label="Correo")  # EmailField valida el formato automáticamente
-    direccion = forms.CharField(max_length=255, label="Dirección")
+class ContactoForm(forms.ModelForm):
+    def clean_telefono(self):
+        telefono = self.cleaned_data.get('telefono', '')
+        if not re.match(r'^\+?\d{10,15}$', telefono):
+            raise forms.ValidationError('Ingrese un número válido (10-15 dígitos, puede incluir +).')
+        return telefono
+    class Meta:
+        model = Contactos
+        fields = ['nombre', 'telefono', 'correo', 'direccion']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'telefono': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'pattern': '^\+?\d{10,15}$',
+                'title': 'Ingrese un número válido (10-15 dígitos, puede incluir +)'
+            }),
+            'correo': forms.EmailInput(attrs={
+                'class': 'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'direccion': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+            })
+        }

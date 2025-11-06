@@ -1,29 +1,75 @@
-from django.shortcuts import render, redirect
-from .forms import AgregarContactoForm
-from .models import Contactos
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db.models import Q
-
-def agregar_contacto(request):
-    if request.method == 'POST':
-        form = AgregarContactoForm(request.POST)
-        if form.is_valid():
-            Contactos.objects.create(
-                nombre=form.cleaned_data['nombre'],
-                telefono=form.cleaned_data['telefono'],
-                correo=form.cleaned_data['correo'],
-                direccion=form.cleaned_data['direccion']
-            )
-            return redirect('lista_contactos')
-    else:
-        form = AgregarContactoForm()
-    return render(request, 'contactos/agregar_contacto.html', {'form': form})
+from .forms import ContactoForm
+from .models import Contactos
 
 def lista_contactos(request):
     query = request.GET.get('q', '')
     if query:
-        contactos = Contactos.objects.filter(
-            Q(nombre__icontains=query) | Q(correo__icontains=query)
+        contactos_list = Contactos.objects.filter(
+            Q(nombre__icontains=query) |
+            Q(correo__icontains=query)
         )
     else:
-        contactos = Contactos.objects.all()
-    return render(request, 'contactos/lista_contactos.html', {'contactos': contactos})
+        contactos_list = Contactos.objects.all()
+    
+    paginator = Paginator(contactos_list, 10)  # 10 contactos por página
+    page = request.GET.get('page')
+    contactos = paginator.get_page(page)
+    
+    return render(request, 'contactos/lista_contactos.html', {
+        'contactos': contactos,
+        'query': query
+    })
+
+def crear_contacto(request):
+    if request.method == 'POST':
+        form = ContactoForm(request.POST)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, 'Contacto creado exitosamente.')
+                return redirect('lista_contactos')
+            except Exception as e:
+                messages.error(request, f'Error al crear el contacto: {str(e)}')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = ContactoForm()
+    
+    return render(request, 'contactos/formulario_contacto.html', {
+        'form': form,
+        'titulo': 'Crear Contacto'
+    })
+
+def editar_contacto(request, pk):
+    contacto = get_object_or_404(Contactos, pk=pk)
+    if request.method == 'POST':
+        form = ContactoForm(request.POST, instance=contacto)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, 'Contacto actualizado exitosamente.')
+                return redirect('lista_contactos')
+            except Exception as e:
+                messages.error(request, f'Error al actualizar el contacto: {str(e)}')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = ContactoForm(instance=contacto)
+    
+    return render(request, 'contactos/formulario_contacto.html', {
+        'form': form,
+        'titulo': 'Editar Contacto'
+    })
+
+def eliminar_contacto(request, pk):
+    contacto = get_object_or_404(Contactos, pk=pk)
+    try:
+        contacto.delete()
+        messages.success(request, 'Contacto eliminado exitosamente.')
+    except Exception as e:
+        messages.error(request, f'Error al eliminar el contacto: {str(e)}')
+    return redirect('lista_contactos')

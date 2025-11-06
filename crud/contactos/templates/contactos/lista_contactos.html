@@ -1,36 +1,99 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contactos</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  </head>
-  <body class="bg-gray-100 text-gray-800">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Contactos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
     <nav class="bg-blue-600 p-4 text-white">
-      <a href="{% url 'lista_contactos' %}" class="font-bold">Contactos</a>
+        <a href="{% url 'lista_contactos' %}" class="font-bold">Contactos</a>
     </nav>
     <div class="container mx-auto p-4">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Lista de Contactos</h1>
-        <a href="{% url 'agregar_contacto' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Agregar nuevo contacto</a>
-      </div>
-      <form method="get" class="mb-4 flex gap-2">
-        <input type="text" name="q" placeholder="Buscar por nombre o correo" value="{{ request.GET.q }}" class="border rounded px-3 py-2 w-full" />
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Buscar</button>
-      </form>
-      <ul class="bg-white rounded shadow p-4">
-        {% for contacto in contactos %}
-          <li class="border-b py-3">
-            <div class="font-semibold text-lg">{{ contacto.nombre }}</div>
-            <div class="text-sm">Teléfono: {{ contacto.telefono }}</div>
-            <div class="text-sm">Correo: {{ contacto.correo }}</div>
-            <div class="text-sm">Dirección: {{ contacto.direccion }}</div>
-          </li>
-        {% empty %}
-          <li class="py-3 text-gray-500">No hay contactos registrados.</li>
-        {% endfor %}
-      </ul>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="bg-{{ message.tags }}-100 border-l-4 border-{{ message.tags }}-500 text-{{ message.tags }}-700 p-4 mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Lista de Contactos</h1>
+            <a href="{% url 'crear_contacto' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Crear Contacto</a>
+        </div>
+
+        <form method="get" class="mb-4 flex gap-2">
+            <input type="text" name="q" placeholder="Buscar por nombre, correo o etiqueta" value="{{ query }}" 
+                   class="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Buscar</button>
+        </form>
+
+        <ul class="bg-white rounded-lg shadow divide-y divide-gray-200">
+            {% for contacto in contactos %}
+                <li class="p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-lg mb-1">{{ contacto.nombre }}</h3>
+                            <p class="text-gray-600">📱 {{ contacto.telefono }}</p>
+                            <p class="text-gray-600">✉️ {{ contacto.correo }}</p>
+                            <p class="text-gray-600">📍 {{ contacto.direccion }}</p>
+                            <div class="mt-2">
+                                {% for etiqueta in contacto.etiquetas.all %}
+                                    <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
+                                        {{ etiqueta.nombre }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <a href="{% url 'editar_contacto' contacto.pk %}" 
+                               class="text-blue-600 hover:text-blue-800">
+                                ✏️ Editar
+                            </a>
+                            <a href="{% url 'eliminar_contacto' contacto.pk %}" onclick="return confirm('¿Estás seguro de eliminar a {{ contacto.nombre|escapejs }}?');"
+                               class="text-red-600 hover:text-red-800">
+                                🗑️ Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="p-4 text-gray-500">
+                    No se encontraron contactos.
+                </li>
+            {% endfor %}
+        </ul>
+
+        {% if contactos.has_other_pages %}
+        <div class="mt-4 flex justify-center space-x-2">
+            {% if contactos.has_previous %}
+                <a href="?page={{ contactos.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" 
+                   class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Anterior
+                </a>
+            {% endif %}
+
+            {% for num in contactos.paginator.page_range %}
+                {% if contactos.number == num %}
+                    <span class="px-3 py-2 bg-blue-800 text-white rounded">{{ num }}</span>
+                {% else %}
+                    <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}" 
+                       class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        {{ num }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+
+            {% if contactos.has_next %}
+                <a href="?page={{ contactos.next_page_number }}{% if query %}&q={{ query }}{% endif %}" 
+                   class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Siguiente
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
-  </body>
+</body>
 </html>
