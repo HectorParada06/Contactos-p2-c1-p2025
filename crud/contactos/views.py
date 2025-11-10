@@ -7,9 +7,11 @@ from .models import Contactos
 
 from django.contrib.auth.models import Group, User
 from rest_framework import permissions, viewsets
+from .serializers import GroupSerializer, UserSerializer, ContactosSerializer
 
-from .serializers import GroupSerializer, UserSerializer
 
+class ContactosViewSet(viewsets.ModelViewSet):
+    quaryset = Contactos.objects.all()
 class UserViewSet(viewsets.ModelViewSet):
  
 
