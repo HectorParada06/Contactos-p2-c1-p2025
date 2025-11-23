@@ -4,26 +4,32 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from .forms import ContactoForm
 from .models import Contactos
+from django.contrib.auth.decorators import login_required
 
-from django.contrib.auth.models import Group, User
 from rest_framework import permissions, viewsets
-from .serializers import GroupSerializer, UserSerializer, ContactosSerializer
+from django.contrib.auth.models import Group, User
+from .serializers import ContactosSerializer, UserSerializer, GroupSerializer
 
 
 class ContactosViewSet(viewsets.ModelViewSet):
-    quaryset = Contactos.objects.all()
-class UserViewSet(viewsets.ModelViewSet):
- 
+    queryset = Contactos.objects.all().order_by("nombre")
+    serializer_class = ContactosSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class GroupViewSet(viewsets.ModelViewSet):
 
+class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all().order_by("name")
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+# Etiqueta model and viewset removed per request
 
 def lista_contactos(request):
     query = request.GET.get('q', '')

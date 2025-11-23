@@ -3,12 +3,6 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
-class Etiqueta(models.Model):
-    nombre = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.nombre
-
 class Contactos(models.Model):
     nombre = models.CharField(max_length=100)
     telefono = models.CharField(
